@@ -1,37 +1,53 @@
-pub trait Wrap {
-    fn wrap(self, min: i16, max: i16) -> i16;
+use std::ops::RangeInclusive;
+
+pub trait CountDigits {
+    fn count_digits(self) -> u16;
 }
 
-impl Wrap for i16 {
-    fn wrap(self, min: i16, max: i16) -> i16 {
-        if self < min {
-            max - (min - self - 1) % (max - min + 1)
-        } else if self > max {
-            min + (self - max - 1) % (max - min + 1)
-        } else {
-            self
+impl CountDigits for u64 {
+    fn count_digits(self) -> u16 {
+        if self == 0 {
+            return 1;
         }
+        let n_f64 = self as f64;
+        let log_value = n_f64.log10();
+        log_value.floor() as u16 + 1
     }
 }
 
 fn main() {
     let path = "./input.txt";
     let file = std::fs::read(path).unwrap();
+
+    //      ____  _____  _    _ _______ ______   ______ ____  _____   _____ ______
+    //     |  _ \|  __ \| |  | |__   __|  ____| |  ____/ __ \|  __ \ / ____|  ____|
+    //     | |_) | |__) | |  | |  | |  | |__    | |__ | |  | | |__) | |    | |__
+    //     |  _ <|  _  /| |  | |  | |  |  __|   |  __|| |  | |  _  /| |    |  __|
+    //     | |_) | | \ \| |__| |  | |  | |____  | |   | |__| | | \ \| |____| |____
+    //     |____/|_|  \_\\____/   |_|  |______| |_|    \____/|_|  \_\\_____|______|
     let lines = file
-        .split(|num| *num == b'\n')
-        .map(|b| b.split_at(1))
-        .map(|b| (b.0[0], String::from_utf8(b.1.to_vec()).unwrap()))
-        .map(|s| {
-            if s.0 == b'L' {
-                -s.1.parse::<i16>().unwrap()
-            } else {
-                s.1.parse::<i16>().unwrap()
-            }
+        .split(|num| *num == b',')
+        .map(|sr| sr.split(|num| *num == b'-'))
+        .map(|srt| {
+            srt.map(|y| {
+                String::from_utf8(y.to_vec())
+                    .unwrap()
+                    .parse::<u64>()
+                    .unwrap()
+            })
         })
-        .scan(50, |a, p| {
-            *a = (*a + p).wrap(0, 99);
-            Some(*a)
+        .map(|mut v| (v.next().unwrap(), v.next().unwrap()))
+        .flat_map(|r| {
+            (r.0..=r.1)
+                .map(|i| (i, i.count_digits()))
+                .filter(|i| i.1 % 2 == 0)
+                .map(|i| (i.0, i.1, 10u64.pow((i.1 / 2).into())))
+                .map(|i| (i.0, i.1, i.2, i.0 / i.2))
+                .map(|i| (i.0, i.1, i.2, i.3, i.0 - i.3 * i.2 as u64))
+                .filter(|i| i.3 == i.4)
+                .map(|i| i.0)
         })
-        .fold(0, |a, b| if b == 0 { a + 1 } else { a });
+        .fold(0, |acc, i| acc + i);
+
     println!("Hello, world! {:?} ", lines);
 }
