@@ -1,3 +1,10 @@
 {
-  "rust-analyzer.linkedProjects": ["2025/01/rust/Cargo.toml"]
+  "rust-analyzer.linkedProjects": [
+    "2025/01/rust/Cargo.toml",
+    "2025/02/rust/Cargo.toml",
+    "2025/03/rust/Cargo.toml",
+    "2025/04/rust/Cargo.toml",
+    "2025/05/rust/Cargo.toml",
+    "2025/06/rust/Cargo.toml"
+  ]
 }
