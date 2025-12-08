@@ -78,7 +78,7 @@ fn main() {
         |mut a, (_dist, p1i, p2i)| {
             let c1 = points[*p1i].circuit;
             let c2 = points[*p2i].circuit;
-            if a[c1].contains(p2i) {
+            if a[c1].contains(p2i) || a[c2].contains(p1i) {
                 return a;
             }
             connections += 1;
@@ -89,9 +89,18 @@ fn main() {
             a
         },
     );
+    let mut tests = test
+        .iter()
+        .map(|v| v.len())
+        .filter(|l| *l > 0)
+        .collect::<Vec<usize>>();
+    tests.sort();
 
     // println!("{:?}", circuits);
     println!("{:?}", connections);
+    println!("{:?}", tests);
+    println!("{:?}", tests.iter().sum::<usize>());
+    println!("{:?}", tests.iter().rev().take(3).product::<usize>());
     // println!("{:?}", circuits.iter().sum::<u64>());
     // println!("{:?}", circuits.iter().rev().take(3).product::<u64>());
 }
