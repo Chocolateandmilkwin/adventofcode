@@ -34,39 +34,52 @@ fn main() {
         lines[main] = line.collect::<Vec<usize>>();
     });
 
-    fn follow_path(lines: &Vec<Vec<usize>>, start: usize, end: usize) -> usize {
+    fn follow_path(
+        lines: &Vec<Vec<usize>>,
+        cache: &mut Vec<Option<usize>>,
+        start: usize,
+        end: usize,
+    ) -> usize {
         if start == end {
             1
+        } else if let Some(cached) = cache[start] {
+            cached
         } else {
-            lines[start]
+            let count = lines[start]
                 .iter()
-                .fold(0usize, |a, &n| a + follow_path(lines, n, end))
+                .fold(0usize, |a, &n| a + follow_path(lines, cache, n, end));
+            cache[start] = Some(count);
+            count
         }
     }
 
-    let paths = follow_path(&lines, YOU, OUT);
-
+    let mut cache1 = vec![None; 16777216];
+    let paths = follow_path(&lines, &mut cache1, YOU, OUT);
     println!("{:?}", paths);
 
-    fn follow_path_2(lines: &Vec<Vec<usize>>, start: usize, end: usize, targets: u8) -> usize {
-        if start == end {
-            println!("Reached OUT with targets: {}", targets);
-            if targets == 3 { 1 } else { 0 }
-        } else {
-            lines[start].iter().fold(0usize, |a, &n| {
-                let mut t = targets.clone();
-                if start == DAC {
-                    t |= 1;
-                }
-                if start == FFT {
-                    t |= 2;
-                }
-                a + follow_path_2(lines, n, end, t)
-            })
-        }
-    }
+    let mut cache_svr_fft = vec![None; 16777216];
+    let paths2 = follow_path(&lines, &mut cache_svr_fft, SVR, FFT);
+    println!("SVR -> FFT {:?}", paths2);
 
-    let paths2 = follow_path(&lines, SVR, FFT);
+    let mut cache_fft_dac = vec![None; 16777216];
+    let paths4 = follow_path(&lines, &mut cache_fft_dac, FFT, DAC);
+    println!("FFT -> DAC {:?}", paths4);
 
-    println!("{:?}", paths2);
+    let mut cache_dac_out = vec![None; 16777216];
+    let paths7 = follow_path(&lines, &mut cache_dac_out, DAC, OUT);
+    println!("DAC -> OUT {:?}", paths7);
+    println!("SVR -> OUT {:?}", paths2 * paths4 * paths7);
+
+    let mut cache_svr_dac = vec![None; 16777216];
+    let paths3 = follow_path(&lines, &mut cache_svr_dac, SVR, DAC);
+    println!("SVR -> DAC {:?}", paths3);
+
+    let mut cache_dac_fft = vec![None; 16777216];
+    let paths5 = follow_path(&lines, &mut cache_dac_fft, DAC, FFT);
+    println!("DAC -> FFT {:?}", paths5);
+
+    let mut cache_fft_out = vec![None; 16777216];
+    let paths6 = follow_path(&lines, &mut cache_fft_out, FFT, OUT);
+    println!("FFT -> OUT {:?}", paths6);
+    println!("SVR -> OUT {:?}", paths3 * paths5 * paths6);
 }
