@@ -1,16 +1,23 @@
 pub trait Wrap {
-    fn wrap(self, min: i16, max: i16) -> (i16, i16);
+    fn wrap(self) -> (i16, i16);
 }
 
 impl Wrap for i16 {
-    fn wrap(self, min: i16, max: i16) -> (i16, i16) {
-        let span = max - min + 1;
-        if self < min {
-            (max - (min - self - 1) % span, (self - min) / span)
-        } else if self > max {
-            (min + (self - max - 1) % span, (self - min) / span)
+    fn wrap(self) -> (i16, i16) {
+        if self < 0 {
+            if self < -100 {
+                return (self % 100, ((self / 100) - 1).abs());
+            } else {
+                return (self + 100, 1);
+            }
+        } else if self >= 100 {
+            if self >= 200 {
+                return (self % 100, self / 100 - 1);
+            } else {
+                return (self - 100, 1);
+            }
         } else {
-            (self, 0)
+            return (self, 0);
         }
     }
 }
@@ -30,17 +37,18 @@ fn main() {
             }
         })
         .scan(50, |a, p| {
-            let found = (*a + p).wrap(0, 99);
+            let found = (*a + p).wrap();
             *a = found.0;
             Some(found)
         })
-        .fold((0, 0), |(a1, a2), b| {
-            (
-                if b.0 == 0 { a1 + 1 } else { a1 },
-                if b.0 == 0 { a2 + 1 } else { a2 } + b.1.abs(),
-            )
+        .fold((0, 0), |(a1, a2), (b1, b2)| {
+            (if b1 == 0 { a1 + 1 } else { a1 }, a2 + b2)
         });
-
-    println!("Hello, world! {:?} ", (-47).wrap(0, 99));
     println!("Hello, world! {:?} ", lines);
+
+    // println!("Hello, world! {:?} ", (50i16 - 68i16).wrap());
+    // println!("Hello, world! {:?} ", (82i16 - 30i16).wrap());
+    // println!("Hello, world! {:?} ", (52i16 + 48i16).wrap());
+    // println!("Hello, world! {:?} ", (50i16 + 250i16).wrap());
+    // println!("Hello, world! {:?} ", (50i16 - 100i16).wrap());
 }
